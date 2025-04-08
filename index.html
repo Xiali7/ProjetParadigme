@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Gestionnaire de Tâches</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        max-width: 800px;
+        margin: auto;
+      }
+      .task {
+        border: 1px solid #ccc;
+        padding: 10px;
+        margin-bottom: 10px;
+      }
+      .task h3 {
+        margin: 0;
+      }
+      .task p {
+        margin: 5px 0;
+      }
+      .buttons {
+        margin-top: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>Gestionnaire de Tâches</h1>
+
+    <!-- Formulaire pour ajouter une tâche -->
+    <h2>Ajouter une tâche</h2>
+    <input type="text" id="titre" placeholder="Titre" />
+    <input type="text" id="description" placeholder="Description" />
+    <input type="date" id="echeance" />
+    <select id="statut">
+      <option value="à faire">À faire</option>
+      <option value="en cours">En cours</option>
+      <option value="terminée">Terminée</option>
+      <option value="annulée">Annulée</option>
+    </select>
+    <select id="priorite">
+      <option value="basse">Basse</option>
+      <option value="moyenne">Moyenne</option>
+      <option value="haute">Haute</option>
+      <option value="critique">Critique</option>
+    </select>
+    <input type="text" id="categorie" placeholder="Catégorie" />
+    <input
+      type="text"
+      id="etiquettes"
+      placeholder="Étiquettes (séparées par des virgules)"
+    />
+    <button onclick="ajouterTache()">Ajouter</button>
+
+    <h2>Liste des Tâches</h2>
+    <div id="task-list"></div>
+
+    <script>
+      const API_URL = "http://localhost:5000/tasks";
+
+      // 🔄 Charger les tâches
+      async function chargerTaches() {
+        try {
+          const response = await fetch(API_URL);
+          if (!response.ok)
+            throw new Error("Erreur de récupération des tâches");
+          const tasks = await response.json();
+
+          const taskList = document.getElementById("task-list");
+          taskList.innerHTML = "";
+
+          tasks.forEach((task) => {
+            const taskDiv = document.createElement("div");
+            taskDiv.classList.add("task");
+            taskDiv.id = `task-${task._id}`;
+
+            taskDiv.innerHTML = `
+                        <div id="display-${task._id}">
+                            <h3>${task.titre} (${task.priorite})</h3>
+                            <p><strong>Description :</strong> ${
+                              task.description
+                            }</p>
+                            <p><strong>Statut :</strong> ${task.statut}</p>
+                            <p><strong>Échéance :</strong> ${
+                              task.echeance
+                                ? new Date(task.echeance).toLocaleDateString()
+                                : "Non définie"
+                            }</p>
+                            <p><strong>Catégorie :</strong> ${
+                              task.categorie || "Non précisée"
+                            }</p>
+                            <p><strong>Étiquettes :</strong> ${
+                              task.etiquettes
+                                ? task.etiquettes.join(", ")
+                                : "Aucune"
+                            }</p>
+                            <div class="buttons">
+                                <button onclick="afficherFormulaireModification('${
+                                  task._id
+                                }', '${task.titre}', '${task.description}', '${
+              task.echeance
+            }', '${task.statut}', '${task.priorite}', '${task.categorie}', '${
+              task.etiquettes ? task.etiquettes.join(", ") : ""
+            }')">Modifier</button>
+                                <button onclick="supprimerTache('${
+                                  task._id
+                                }')">Supprimer</button>
+                            </div>
+                        </div>
+                        <div id="edit-${task._id}" style="display: none;"></div>
+                    `;
+
+            taskList.appendChild(taskDiv);
+          });
+        } catch (error) {
+          console.error("Erreur:", error);
+        }
+      }
+
+      // ➕ Ajouter une tâche
+      async function ajouterTache() {
+        const titre = document.getElementById("titre").value;
+        const description = document.getElementById("description").value;
+        const echeance = document.getElementById("echeance").value || null;
+        const statut = document.getElementById("statut").value;
+        const priorite = document.getElementById("priorite").value;
+        const categorie = document.getElementById("categorie").value;
+        const etiquettes = document
+          .getElementById("etiquettes")
+          .value.split(",")
+          .map((e) => e.trim());
+
+        if (!titre || !description) {
+          alert("Veuillez remplir au moins le titre et la description");
+          return;
+        }
+
+        try {
+          await fetch(API_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              titre,
+              description,
+              echeance,
+              statut,
+              priorite,
+              categorie,
+              etiquettes,
+            }),
+          });
+
+          chargerTaches();
+        } catch (error) {
+          console.error("Erreur:", error);
+        }
+      }
+
+      // ✏ Afficher le formulaire de modification
+      function afficherFormulaireModification(
+        id,
+        titre,
+        description,
+        echeance,
+        statut,
+        priorite,
+        categorie,
+        etiquettes
+      ) {
+        document.getElementById(`display-${id}`).style.display = "none";
+        document.getElementById(`edit-${id}`).style.display = "block";
+
+        document.getElementById(`edit-${id}`).innerHTML = `
+                <input type="text" id="edit-titre-${id}" value="${titre}">
+                <input type="text" id="edit-description-${id}" value="${description}">
+                <input type="date" id="edit-echeance-${id}" value="${
+          echeance ? echeance.split("T")[0] : ""
+        }">
+                <select id="edit-statut-${id}">
+                  <option value="à faire" ${
+                    statut === "à faire" ? "selected" : ""
+                  }>À faire</option>
+                  <option value="en cours" ${
+                    statut === "en cours" ? "selected" : ""
+                  }>En cours</option>
+                  <option value="terminée" ${
+                    statut === "terminée" ? "selected" : ""
+                  }>Terminée</option>
+                  <option value="annulée" ${
+                    statut === "annulée" ? "selected" : ""
+                  }>Annulée</option>
+                </select>
+                <select id="edit-priorite-${id}">
+                  <option value="basse" ${
+                    priorite === "basse" ? "selected" : ""
+                  }>Basse</option>
+                  <option value="moyenne" ${
+                    priorite === "moyenne" ? "selected" : ""
+                  }>Moyenne</option>
+                  <option value="haute" ${
+                    priorite === "haute" ? "selected" : ""
+                  }>Haute</option>
+                  <option value="critique" ${
+                    priorite === "critique" ? "selected" : ""
+                  }>Critique</option>
+                </select>
+                <input type="text" id="edit-categorie-${id}" value="${categorie}">
+                <input type="text" id="edit-etiquettes-${id}" value="${etiquettes}">
+                <button onclick="validerModification('${id}')">Enregistrer</button>
+                <button onclick="chargerTaches()">Annuler</button>
+            `;
+      }
+
+      // ✔ Valider la modification
+      async function validerModification(id) {
+        const titre = document.getElementById(`edit-titre-${id}`).value;
+        const description = document.getElementById(
+          `edit-description-${id}`
+        ).value;
+        const echeance =
+          document.getElementById(`edit-echeance-${id}`).value || null;
+        const statut = document.getElementById(`edit-statut-${id}`).value;
+        const priorite = document.getElementById(`edit-priorite-${id}`).value;
+        const categorie = document.getElementById(`edit-categorie-${id}`).value;
+        const etiquettes = document
+          .getElementById(`edit-etiquettes-${id}`)
+          .value.split(",")
+          .map((e) => e.trim());
+
+        if (!titre || !description) {
+          alert("Titre et description sont obligatoires.");
+          return;
+        }
+
+        try {
+          await fetch(`${API_URL}/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              titre,
+              description,
+              echeance,
+              statut,
+              priorite,
+              categorie,
+              etiquettes,
+            }),
+          });
+
+          chargerTaches();
+        } catch (error) {
+          console.error("Erreur:", error);
+        }
+      }
+
+      // 🗑 Supprimer une tâche
+      async function supprimerTache(id) {
+        if (!confirm("Voulez-vous vraiment supprimer cette tâche ?")) return;
+
+        try {
+          await fetch(`${API_URL}/${id}`, { method: "DELETE" });
+          chargerTaches();
+        } catch (error) {
+          console.error("Erreur:", error);
+        }
+      }
+
+      // Charger les tâches au démarrage
+      document.addEventListener("DOMContentLoaded", chargerTaches);
+    </script>
+  </body>
+</html>
