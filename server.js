@@ -12,8 +12,8 @@ mongoose
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
-  .then(() => console.log("✅ Connecté à MongoDB"))
-  .catch((err) => console.error("❌ Erreur de connexion MongoDB :", err));
+  .then(() => console.log("Connecté à MongoDB"))
+  .catch((err) => console.error("Erreur de connexion MongoDB :", err));
 
 app.use("/tasks", require("./routes/tasks"));
 

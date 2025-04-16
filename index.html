@@ -59,7 +59,7 @@
     <script>
       const API_URL = "http://localhost:5000/tasks";
 
-      // 🔄 Charger les tâches
+      // Charger les tâches
       async function chargerTaches() {
         try {
           const response = await fetch(API_URL);
@@ -118,7 +118,7 @@
         }
       }
 
-      // ➕ Ajouter une tâche
+      // Ajouter une tâche
       async function ajouterTache() {
         const titre = document.getElementById("titre").value;
         const description = document.getElementById("description").value;
@@ -157,7 +157,7 @@
         }
       }
 
-      // ✏ Afficher le formulaire de modification
+      // Afficher le formulaire de modification
       function afficherFormulaireModification(
         id,
         titre,
@@ -212,7 +212,7 @@
             `;
       }
 
-      // ✔ Valider la modification
+      // Valider la modification
       async function validerModification(id) {
         const titre = document.getElementById(`edit-titre-${id}`).value;
         const description = document.getElementById(
@@ -254,7 +254,7 @@
         }
       }
 
-      // 🗑 Supprimer une tâche
+      // Supprimer une tâche
       async function supprimerTache(id) {
         if (!confirm("Voulez-vous vraiment supprimer cette tâche ?")) return;
 

@@ -3,7 +3,7 @@ const Task = require("../models/Task");
 const mongoose = require("mongoose");
 const router = express.Router();
 
-// 🔹 Récupérer toutes les tâches avec filtres et tris
+// Récupérer toutes les tâches avec filtres et tris
 router.get("/", async (req, res) => {
   try {
     let filter = {};
@@ -23,7 +23,7 @@ router.get("/", async (req, res) => {
   }
 });
 
-// 🔹 Ajouter une nouvelle tâche (POST /tasks)
+// Ajouter une nouvelle tâche (POST /tasks)
 router.post("/", async (req, res) => {
   try {
     const {
@@ -59,7 +59,7 @@ router.post("/", async (req, res) => {
   }
 });
 
-// 🔹 Modifier une tâche (PUT /tasks/:id)
+// Modifier une tâche (PUT /tasks/:id)
 router.put("/:id", async (req, res) => {
   try {
     // Vérifie si l'ID est bien un ObjectId MongoDB
@@ -93,7 +93,7 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-// 🔹 Supprimer une tâche (DELETE /tasks/:id)
+// Supprimer une tâche (DELETE /tasks/:id)
 router.delete("/:id", async (req, res) => {
   try {
     const suppression = await Task.findByIdAndDelete(req.params.id);
